@@ -31,7 +31,7 @@ async def ask_endpoint(request: AskRequest):
             
             if api_key.startswith("sk-or"):
                 target_url = "https://openrouter.ai/api/v1/chat/completions"
-                target_model = "meta-llama/llama-3.1-8b-instruct" # Equivalent to Groq's llama-3.1-8b-instant
+                target_model = "qwen/qwen-2.5-coder-32b-instruct:free" # Best free model for coding
             else:
                 target_url = GROQ_API_URL
                 target_model = MODEL
