@@ -51,6 +51,17 @@ async def ask_endpoint(request: AskRequest):
                 if response.status_code == 200:
                     data = response.json()
                     answer = data.get("choices", [])[0].get("message", {}).get("content", "")
+                    
+                    # Strip markdown blocks if the model still includes them
+                    answer = answer.strip()
+                    if answer.startswith("```"):
+                        lines = answer.split("\n")
+                        if lines[0].startswith("```"):
+                            lines = lines[1:]
+                        if lines and lines[-1].startswith("```"):
+                            lines = lines[:-1]
+                        answer = "\n".join(lines).strip()
+                    
                     return {"status": "success", "answer": answer}
                 
                 # If rate limited or standard HTTP error occurs, rotate to next key
