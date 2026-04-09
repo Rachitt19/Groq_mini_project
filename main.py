@@ -24,18 +24,26 @@ async def ask_endpoint(request: AskRequest):
     if not API_KEYS:
         return {"status": "error", "answer": "No API keys configured"}
     
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": "Return ONLY clean Python code. No markdown, no ``` blocks."},
-            {"role": "user", "content": request.prompt}
-        ]
-    }
-    
     # timeout: 15 seconds to ensure we quickly rotate keys if an endpoint hangs
     async with httpx.AsyncClient(timeout=15.0) as client:
         for _ in range(len(API_KEYS)):
             api_key = API_KEYS[current_key_index]
+            
+            if api_key.startswith("sk-or"):
+                target_url = "https://openrouter.ai/api/v1/chat/completions"
+                target_model = "meta-llama/llama-3.1-8b-instruct" # Equivalent to Groq's llama-3.1-8b-instant
+            else:
+                target_url = GROQ_API_URL
+                target_model = MODEL
+                
+            payload = {
+                "model": target_model,
+                "messages": [
+                    {"role": "system", "content": "Return ONLY clean Python code. No markdown, no ``` blocks."},
+                    {"role": "user", "content": request.prompt}
+                ]
+            }
+
             headers = {
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
@@ -43,7 +51,7 @@ async def ask_endpoint(request: AskRequest):
             
             try:
                 response = await client.post(
-                    GROQ_API_URL,
+                    target_url,
                     headers=headers,
                     json=payload
                 )
