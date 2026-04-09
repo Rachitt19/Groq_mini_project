@@ -26,7 +26,10 @@ async def ask_endpoint(request: AskRequest):
     
     payload = {
         "model": MODEL,
-        "messages": [{"role": "user", "content": request.prompt}]
+        "messages": [
+            {"role": "system", "content": "Return ONLY clean Python code. No markdown, no ``` blocks."},
+            {"role": "user", "content": request.prompt}
+        ]
     }
     
     # timeout: 15 seconds to ensure we quickly rotate keys if an endpoint hangs
